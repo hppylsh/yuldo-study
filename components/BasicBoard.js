@@ -1,100 +1,176 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import axios from "axios";
+import WriteImg from "/public/images/write_image.svg";
+import Smile from "/public/images/smile.svg";
+import Pencil from "/public/images/pencil.svg";
+import Close from "/public/images/white_close.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { BOARD_WRITE_REQUEST } from "../reducers/post";
 
-const BasicBoard = () => {
-  //함수의리턴값 1.변수, 2.함수
-  let [contents, setContents] = useState([]);
-  // react에서는 변수의 상태를 바꾸어주어야 인식함(setContents 사용)
-  // ☆ 리액트의 불변성
-  // 불변성은 어떤 값을 직접적으로 변경하지 않고 새로운 값을 만들어내는 것입니다.
-  // 필요한 값을 변형해서 사용하고 싶다면 어떤 값의 사본을 만들어서 사용해야 합니다.
+const BoardWrite = () => {
+  const [contents, setContents] = useState("");
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("H");
+  const dispatch = useDispatch();
+  const { message } = useSelector((state) => state.post);
 
-  const getPost = async () => {
-    let boardList = await axios.get("http://localhost:3060/post");
-    setContents(boardList.data);
-  };
-  //HOOK
-  //- useState와 useEffect를 사용하여 특징적으로 state와 lifecycle과 같은 기능을 사용 가능하게 해준다
   useEffect(() => {
-    getPost();
-  }, []);
+    if (message) {
+      alert(message);
+    }
+  }, [message]);
 
+  const getContents = (e) => {
+    const { name, value } = e.target;
+    setContents(value);
+  };
+
+  const getTitle = (e) => {
+    const { name, value } = e.target;
+    setTitle(value);
+  };
+
+  const getCategory = (e) => {
+    const { name, value } = e.target;
+    setCategory(value);
+  };
+
+  const save = () => {
+    dispatch({
+      type: BOARD_WRITE_REQUEST,
+      data: { title, contents, category, writer: "zena" },
+    });
+  };
   return (
     <Container>
       <TitleContainer>
-        <Category>구분</Category>
-        <TextTitle>글제목</TextTitle>
-        <IconContainer>작성일</IconContainer>
-        <IconContainer>좋아요♡</IconContainer>
+        <TitleText>글쓰기</TitleText>
+        <WriteImg />
       </TitleContainer>
+
       <ContentsContainer>
-        {contents
-          ? contents.map((item, index) => (
-              <div key={index + item.date}>
-                <CategoryContent>{item.category}</CategoryContent>
-                <TitleContent>
-                  {item.title}
-                  <span> [{item.comment_count}]</span>
-                </TitleContent>
-                <Iconcontent>{item.date}</Iconcontent>
-                <Iconcontent>{item.like}</Iconcontent>
-              </div>
-            ))
-          : "내용이 없습니다"}
+        <InputTitle
+          name="title"
+          onChange={getTitle}
+          placeholder="제목을 입력해주세요."
+        ></InputTitle>
+        <SelecetWrap>
+          <SelecetBox name="category" onChange={getCategory} defaultValue="H">
+            //for loop 으로 변경
+            <option value="H">유머</option>
+            <option value="I">이슈</option>
+          </SelecetBox>
+          <div>
+            <Smile />
+            스티커
+          </div>
+        </SelecetWrap>
+        <TextAreaContents
+          name="content"
+          onChange={getContents}
+          placeholder="내용을 입력해주세요."
+        ></TextAreaContents>
+        <ButtonWrap>
+          <Button color="#637887">
+            <div>
+              <Close />
+              취소
+            </div>
+          </Button>
+          <Button onClick={save}>
+            <div>
+              <Pencil />
+              등록
+            </div>
+          </Button>
+        </ButtonWrap>
       </ContentsContainer>
     </Container>
   );
 };
-export default BasicBoard;
-
-// 리액트에서는 for문대신 map을 사용함
+export default BoardWrite;
 
 const Container = styled.div`
   width: 100%;
-  font-size: 13px;
-  color: #1e1e1e;
+  /* padding-top: 40px;
+  padding-left: 50px; */
 `;
 
 const TitleContainer = styled.div`
-  border-bottom: 1px solid #1e1e1e;
-  height: 44px;
+  border-bottom: 1px solid #ebecf1;
+  width: 100%;
+  height: 77px;
+  padding-right: 21px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  text-align: center;
 `;
-
-const Category = styled.div`
-  width: 150px;
-`;
-const TextTitle = styled.div`
-  width: 100%;
-`;
-const IconContainer = styled.div`
-  width: 150px;
-`;
-
-const CategoryContent = styled.div`
-  width: 150px;
-  padding-left: 30px;
-`;
-const TitleContent = styled.div`
-  width: 100%;
-
-  span {
-    color: #ff4343;
-    margin-left: 5px;
-  }
-`;
-const Iconcontent = styled.div`
-  width: 150px;
-  display: flex;
-  justify-content: center;
-`;
-
-// div를 flex처리해야함
 const ContentsContainer = styled.div`
+  padding-left: 21px;
+  padding-right: 21px;
+`;
+
+//페이지 타이틀 형식이 동일하다면 컴포넌트화 고려
+const TitleText = styled.div`
+  font: normal normal medium 20px/28px Noto Sans CJK KR;
+  color: #1e1e1e;
+`;
+
+const InputTitle = styled.input`
+  width: 100%;
+  height: 35px;
+  margin-top: 23px;
+  margin-bottom: 10px;
+`;
+
+const SelecetWrap = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
   div {
     display: flex;
+    align-items: center;
+    font: normal normal normal 14px/19px Noto Sans CJK KR;
+  }
+`;
+
+const SelecetBox = styled.select`
+  width: 230px;
+  height: 35px;
+  border: 1px solid #d2d2d2;
+`;
+
+const TextAreaContents = styled.textarea`
+  width: 100%;
+  height: 433px;
+`;
+
+const ButtonWrap = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+`;
+
+// dartbuttom component  확인 후 이동
+// 1 : button border가 잡히는것같음
+// 2 : 이미지와  텍스트 정렬  : 텍스트 길이 가변적일때 고려해서 스타일 지정해야함(수정필요)
+
+const Button = styled.button`
+  margin-left: 10px;
+  background-color: ${(props) => (props.color ? props.color : "#393535")};
+  width: 110px;
+  height: 35px;
+  border-radius: 18px;
+  border-color: ${(props) => (props.color ? props.color : "#393535")};
+
+  div {
+    align-items: center;
+    font: normal normal normal 13px/18px Noto Sans CJK KR;
+    color: #ffffff;
+    display: inline-block;
+    text-align: center;
   }
 `;
